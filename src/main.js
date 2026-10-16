@@ -1,7 +1,11 @@
 import './style.css';
 import { obtenerPokemons, obtenerPokemonPorNombre } from './api/pokemonApi.js';
+import { guardarSesion, obtenerSesion, cerrarSesion} from './storage/session.js';
 
 const app = document.querySelector('#app');
+const sesionActual = obtenerSesion();
+
+
 
 app.innerHTML = `
   <main>
@@ -53,6 +57,13 @@ const form = document.querySelector('#profile-form');
         errorElement.textContent = 'Debes seleccionar un Pokémon favorito antes de crear el perfil.';
         return;
       };
+      const perfil = {
+        username: username,
+        pokemonFavorito: pokemonFavorito,
+      };
+      guardarSesion(perfil);
+      mostrarPerfil(perfil);
+      document.title = `PokeMemory - ${perfil.username}`;
     });
 
 let listaPokemons = [];    
@@ -113,3 +124,31 @@ pokemonSearch.addEventListener('input', (event) => {
     pokemonResults.appendChild(elemento);
   });
 });
+function mostrarPerfil(perfil) {
+  const app = document.querySelector('#app');
+  app.innerHTML = `
+    <main>
+      <h1>PokeMemory</h1>
+      <h2>¡Bienvenido, ${perfil.username}!</h2>
+
+      <p>Tu Pokémon favorito es: ${perfil.pokemonFavorito.nombre}</p>
+      <img
+        src="${perfil.pokemonFavorito.imagen}"
+        alt="Imagen de ${perfil.pokemonFavorito.nombre}" 
+      />
+      <button id="play-button" type="button">Jugar</button>
+
+      <button id="logout-button" type="button">Cerrar Sesión</button>
+    </main>
+  `;
+  const logoutButton = document.querySelector('#logout-button');
+  logoutButton.addEventListener('click', () => {
+    cerrarSesion();
+    window.location.reload();
+  });
+}
+
+if (sesionActual !== null) {
+  document.title = `PokeMemory - ${sesionActual.username}`;
+  mostrarPerfil(sesionActual);
+}
