@@ -81,6 +81,9 @@ let pokemonFavorito = null;
 pokemonSearch.addEventListener('input', (event) => {
   const textoBuscado = event.target.value.trim().toLowerCase();
 
+  pokemonFavorito = null;
+  selectedPokemon.replaceChildren();
+
   if (textoBuscado === '') {
     pokemonResults.replaceChildren();
     return;
@@ -129,7 +132,7 @@ function mostrarPerfil(perfil) {
   app.innerHTML = `
     <main>
       <h1>PokeMemory</h1>
-      <h2>¡Bienvenido, ${perfil.username}!</h2>
+      <h2 id="welcome-message"></h2>
 
       <p>Tu Pokémon favorito es: ${perfil.pokemonFavorito.nombre}</p>
       <img
@@ -141,6 +144,9 @@ function mostrarPerfil(perfil) {
       <button id="logout-button" type="button">Cerrar Sesión</button>
     </main>
   `;
+  const welcomeMessage = document.querySelector('#welcome-message');
+  welcomeMessage.textContent = `¡Bienvenido, ${perfil.username}!`;
+
   const logoutButton = document.querySelector('#logout-button');
   logoutButton.addEventListener('click', () => {
     cerrarSesion();
