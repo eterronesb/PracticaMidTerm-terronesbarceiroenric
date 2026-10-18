@@ -217,6 +217,8 @@ function mostrarJuego(perfil, cantidad) {
 
       const cartas = generarParejas(pokemons, cantidad);
       const tablero = document.querySelector('#game-board');
+      const cartasDescubiertas = [];
+      let tableroBloqueado = false;
 
       cartas.forEach((carta) => {
         const boton = document.createElement('button');
@@ -227,6 +229,42 @@ function mostrarJuego(perfil, cantidad) {
         boton.dataset.pokemon = carta.pokemon;
         boton.dataset.parejaId = String(carta.parejaId);
 
+        boton.addEventListener('click', () => {
+          if (
+            tableroBloqueado ||
+            boton.classList.contains('revealed') ||
+            boton.classList.contains('matched')
+          ) {
+            return;
+          }
+
+          boton.textContent = carta.pokemon;
+          boton.classList.add('revealed');
+          cartasDescubiertas.push(boton);
+
+          if (cartasDescubiertas.length === 2) {
+            const [primeraCarta, segundaCarta] = cartasDescubiertas;
+
+            if (primeraCarta.dataset.parejaId === segundaCarta.dataset.parejaId) {
+              primeraCarta.classList.add('matched');
+              segundaCarta.classList.add('matched');
+            
+              cartasDescubiertas.length = 0;
+            } else {
+              tableroBloqueado = true;
+
+              setTimeout(() => {
+                primeraCarta.textContent = '?';
+                segundaCarta.textContent = '?';
+                primeraCarta.classList.remove('revealed');
+                segundaCarta.classList.remove('revealed');
+                cartasDescubiertas.length = 0;
+                tableroBloqueado = false;
+              }, 1000);
+            }
+          }
+        });
+          
         tablero.appendChild(boton);
       });
     })
