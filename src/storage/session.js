@@ -10,7 +10,34 @@ export function obtenerSesion() {
     if (datosGuardados === null) {
         return null;
     }
-    return JSON.parse(datosGuardados);
+
+    try {
+        const perfil = JSON.parse(datosGuardados);
+
+        const nombreValido =
+            typeof perfil.username === 'string' &&
+             perfil.username.trim().length >= 3 &&
+             perfil.username.trim().length <= 15;
+        
+        const pokemonValido =
+            typeof perfil.pokemonFavorito?.id === 'number' &&
+            Number.isInteger(perfil.pokemonFavorito.id) &&
+            perfil.pokemonFavorito.id > 0 &&
+            typeof perfil.pokemonFavorito.nombre === 'string' &&
+            perfil.pokemonFavorito.nombre.trim().length > 0 &&
+            typeof perfil.pokemonFavorito.imagen === 'string' &&
+            perfil.pokemonFavorito.imagen.startsWith('https://');
+            
+        if (!nombreValido || !pokemonValido) {
+            sessionStorage.removeItem(SESSION_KEY);
+            return null;
+        }
+        
+        return perfil;
+    } catch {
+        sessionStorage.removeItem(SESSION_KEY);
+        return null;
+    }
 }
 
 export function cerrarSesion() {

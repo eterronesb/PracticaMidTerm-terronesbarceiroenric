@@ -139,6 +139,18 @@ function mostrarPerfil(perfil) {
         src="${perfil.pokemonFavorito.imagen}"
         alt="Imagen de ${perfil.pokemonFavorito.nombre}" 
       />
+      <div>
+        <label for="card-count">Número de cartas:</label>
+        <input
+          type="number"
+          id="card-count"
+          min="2"
+          step="2"
+          value="12"
+          required
+        />
+        <p id="card-count-error" role="alert"></p>
+      </div>
       <button id="play-button" type="button">Jugar</button>
 
       <button id="logout-button" type="button">Cerrar Sesión</button>
