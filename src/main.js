@@ -1,6 +1,7 @@
 import './style.css';
 import { obtenerPokemons, obtenerPokemonPorNombre } from './api/pokemonApi.js';
 import { guardarSesion, obtenerSesion, cerrarSesion} from './storage/session.js';
+import { generarParejas } from './game/gameLogic.js';
 
 const app = document.querySelector('#app');
 const sesionActual = obtenerSesion();
@@ -164,6 +165,75 @@ function mostrarPerfil(perfil) {
     cerrarSesion();
     window.location.reload();
   });
+
+  const playButton = document.querySelector('#play-button');
+  const cardCountInput = document.querySelector('#card-count');
+  const cardCountError = document.querySelector('#card-count-error');
+
+  playButton.addEventListener('click', () => {
+    const cantidad = Number(cardCountInput.value);
+
+    if (
+      cardCountInput.value.trim() === '' ||
+      !Number.isInteger(cantidad) ||
+      cantidad < 2 ||
+      cantidad % 2 !== 0
+    ) {
+      cardCountError.textContent = 'Por favor, ingresa un número par mayor o igual a 2.';
+      return;
+    }
+
+    cardCountError.textContent = '';
+
+    mostrarJuego(perfil, cantidad);
+  });   
+}
+
+function mostrarJuego(perfil, cantidad) {
+  const app = document.querySelector('#app');
+
+  app.innerHTML = `
+    <main>
+      <h1>PokeMemory</h1>
+      <h2>Juego de memoria Porkémon</h2>
+
+      <p id="game-player"></p>
+      <p id="total-cards"></p>
+
+      <section id="game-board" aria-label="Tablero de memoria"></section>
+    </main>
+  `;
+  
+  document.querySelector('#game-player').textContent = `Jugador: ${perfil.username}`;
+  document.querySelector('#total-cards').textContent = `Número de cartas: ${cantidad}`;
+
+  obtenerPokemons()
+    .then((pokemons) => {
+      if (cantidad / 2 > pokemons.length) {
+        document.querySelector('#game-board').textContent =
+          'No hay suficientes Pokémon para crear tantas parejas.';
+        return;
+      }
+
+      const cartas = generarParejas(pokemons, cantidad);
+      const tablero = document.querySelector('#game-board');
+
+      cartas.forEach((carta) => {
+        const boton = document.createElement('button');
+
+        boton.type = 'button';
+        boton.classList.add('memory-card');
+        boton.textContent = '?';
+        boton.dataset.pokemon = carta.pokemon;
+        boton.dataset.parejaId = String(carta.parejaId);
+
+        tablero.appendChild(boton);
+      });
+    })
+    .catch(() => {
+      document.querySelector('#game-board').textContent =
+        'No se pudieron cargar los Pokémon. Inténtalo de nuevo.';
+    });
 }
 
 if (sesionActual !== null) {
