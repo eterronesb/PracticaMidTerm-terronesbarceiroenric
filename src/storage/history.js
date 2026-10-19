@@ -21,3 +21,15 @@ export function guardarPartida(partida) {
     historial.push(partida);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(historial));
 }
+
+export function obtenerRanking() {
+    const historial = obtenerHistorial();
+
+    return [...historial].sort((a,b) => {
+        if(a.cantidadCartas !== b.cantidadCartas) {
+            return b.cantidadCartas - a.cantidadCartas;
+        }
+
+        return a.tiempoSegundos - b.tiempoSegundos;
+    });
+}
