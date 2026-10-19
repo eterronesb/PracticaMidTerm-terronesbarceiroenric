@@ -1,6 +1,7 @@
 import './style.css';
 import { obtenerPokemons, obtenerPokemonPorNombre } from './api/pokemonApi.js';
 import { guardarSesion, obtenerSesion, cerrarSesion} from './storage/session.js';
+import { generarParejas } from './game/gameLogic.js';
 
 const app = document.querySelector('#app');
 const sesionActual = obtenerSesion();
@@ -139,6 +140,18 @@ function mostrarPerfil(perfil) {
         src="${perfil.pokemonFavorito.imagen}"
         alt="Imagen de ${perfil.pokemonFavorito.nombre}" 
       />
+      <div>
+        <label for="card-count">Número de cartas:</label>
+        <input
+          type="number"
+          id="card-count"
+          min="2"
+          step="2"
+          value="12"
+          required
+        />
+        <p id="card-count-error" role="alert"></p>
+      </div>
       <button id="play-button" type="button">Jugar</button>
 
       <button id="logout-button" type="button">Cerrar Sesión</button>
@@ -151,6 +164,178 @@ function mostrarPerfil(perfil) {
   logoutButton.addEventListener('click', () => {
     cerrarSesion();
     window.location.reload();
+  });
+
+  const playButton = document.querySelector('#play-button');
+  const cardCountInput = document.querySelector('#card-count');
+  const cardCountError = document.querySelector('#card-count-error');
+
+  playButton.addEventListener('click', () => {
+    const cantidad = Number(cardCountInput.value);
+
+    if (
+      cardCountInput.value.trim() === '' ||
+      !Number.isInteger(cantidad) ||
+      cantidad < 2 ||
+      cantidad > 24 ||
+      cantidad % 2 !== 0
+    ) {
+      cardCountError.textContent = 'Por favor, ingresa un número par entre 2 y 24.';
+      return;
+    }
+
+    cardCountError.textContent = '';
+
+    mostrarJuego(perfil, cantidad);
+  });   
+}
+
+function mostrarJuego(perfil, cantidad) {
+  const app = document.querySelector('#app');
+
+  app.innerHTML = `
+    <main>
+      <h1>PokeMemory</h1>
+      <h2>Juego de memoria Porkémon</h2>
+
+      <p id="game-player"></p>
+      <p id="total-cards"></p>
+
+      <p>
+        Tiempo: <span id="game-timer">00:00</span>
+      </p>
+      <button id="restart-game" type="button">Reiniciar Juego</button>
+
+      <section id="game-board" aria-label="Tablero de memoria"></section>
+    </main>
+  `;
+  
+  document.querySelector('#game-player').textContent = `Jugador: ${perfil.username}`;
+  document.querySelector('#total-cards').textContent = `Número de cartas: ${cantidad}`;
+
+  const botonReiniciar = document.querySelector('#restart-game');
+
+  const gameTimer = document.querySelector('#game-timer');
+  let tiempoTranscurrido = 0;
+  let intervaloCronometro = null;
+  let timeoutOcultarCartas = null;
+
+  botonReiniciar.addEventListener('click', () => {
+    clearInterval(intervaloCronometro);
+    clearTimeout(timeoutOcultarCartas);
+    mostrarJuego(perfil, cantidad);
+  });
+
+  function actualizarCronometro() {
+    tiempoTranscurrido++;
+    const minutos = Math.floor(tiempoTranscurrido / 60);
+    const segundos = tiempoTranscurrido % 60;
+
+    const minutosFormateados = String(minutos).padStart(2, '0');
+    const segundosFormateados = String(segundos).padStart(2, '0');
+    gameTimer.textContent = `${minutosFormateados}:${segundosFormateados}`;
+  }
+
+  obtenerPokemons()
+    .then((pokemons) => {
+      if (!app.contains(botonReiniciar)) {
+        return;
+      }
+
+      if (cantidad / 2 > pokemons.length) {
+        document.querySelector('#game-board').textContent =
+          'No hay suficientes Pokémon para crear tantas parejas.';
+        return;
+      }
+
+      const cartas = generarParejas(pokemons, cantidad);
+      const tablero = document.querySelector('#game-board');
+      const cartasDescubiertas = [];
+      let tableroBloqueado = false;
+
+      let parejasEncontradas = 0;
+      const totalParejas = cantidad / 2;
+
+      cartas.forEach((carta) => {
+        const boton = document.createElement('button');
+
+        boton.type = 'button';
+        boton.classList.add('memory-card');
+        boton.textContent = '?';
+        boton.dataset.pokemon = carta.pokemon;
+        boton.dataset.parejaId = String(carta.parejaId);
+
+        boton.addEventListener('click', () => {
+          if (
+            tableroBloqueado ||
+            boton.classList.contains('revealed') ||
+            boton.classList.contains('matched')
+          ) {
+            return;
+          }
+
+          boton.replaceChildren();
+
+          const imagen = document.createElement('img');
+          imagen.src = carta.imagen;
+          imagen.alt = carta.pokemon;
+          imagen.classList.add('pokemon-card-image');
+          imagen.addEventListener('error', () => {
+            imagen.remove();
+          }, { once: true });
+
+          const nombre = document.createElement('span');
+          nombre.textContent = carta.pokemon;
+          nombre.classList.add('pokemon-card-name');
+
+          boton.append(imagen, nombre);
+
+          boton.classList.add('revealed');
+          cartasDescubiertas.push(boton);
+
+          if (cartasDescubiertas.length === 2) {
+            const [primeraCarta, segundaCarta] = cartasDescubiertas;
+
+            if (primeraCarta.dataset.parejaId === segundaCarta.dataset.parejaId) {
+              primeraCarta.classList.add('matched');
+              segundaCarta.classList.add('matched');
+            
+              cartasDescubiertas.length = 0;
+              parejasEncontradas ++;
+
+              if (parejasEncontradas === totalParejas) {
+                clearInterval(intervaloCronometro);
+                const mensajeVictoria = document.createElement('p');
+
+                mensajeVictoria.id = 'victory-message';
+                mensajeVictoria.textContent = `¡Felicidades, ${perfil.username}! Has encontrado todas las parejas.`;
+
+                tablero.appendChild(mensajeVictoria);
+              } 
+          }else {
+            tableroBloqueado = true;
+
+            timeoutOcultarCartas = setTimeout(() => {
+              primeraCarta.textContent = '?';
+              segundaCarta.textContent = '?';
+              primeraCarta.classList.remove('revealed');
+              segundaCarta.classList.remove('revealed');
+              cartasDescubiertas.length = 0;
+              tableroBloqueado = false;
+            }, 1000);
+          }
+        }
+      });
+      tablero.appendChild(boton);
+    });
+    intervaloCronometro = setInterval(actualizarCronometro, 1000);
+  })
+  .catch(() => {
+    if (!app.contains(botonReiniciar)) {
+      return;
+    }
+    document.querySelector('#game-board').textContent =
+      'No se pudieron cargar los Pokémon. Por favor, inténtalo de nuevo.';
   });
 }
 

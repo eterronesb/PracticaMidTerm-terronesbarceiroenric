@@ -11,7 +11,23 @@ body {
 }
 
 #app {
-  wwidth: 100%;
+  width: 100%;
   min-height: 100vh;
   padding: 20px;
+}
+
+.pokemon-card-image {
+  display: block;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin: 0 auto 8px;
+}
+
+.pokemon-card-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  text-transform: capitalize;
 }
