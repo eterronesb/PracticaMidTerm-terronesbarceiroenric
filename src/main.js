@@ -177,9 +177,10 @@ function mostrarPerfil(perfil) {
       cardCountInput.value.trim() === '' ||
       !Number.isInteger(cantidad) ||
       cantidad < 2 ||
+      cantidad > 24 ||
       cantidad % 2 !== 0
     ) {
-      cardCountError.textContent = 'Por favor, ingresa un número par mayor o igual a 2.';
+      cardCountError.textContent = 'Por favor, ingresa un número par entre 2 y 24.';
       return;
     }
 
@@ -279,6 +280,9 @@ function mostrarJuego(perfil, cantidad) {
           imagen.src = carta.imagen;
           imagen.alt = carta.pokemon;
           imagen.classList.add('pokemon-card-image');
+          imagen.addEventListener('error', () => {
+            imagen.remove();
+          }, { once: true });
 
           const nombre = document.createElement('span');
           nombre.textContent = carta.pokemon;
