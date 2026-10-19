@@ -203,6 +203,7 @@ function mostrarJuego(perfil, cantidad) {
       <p>
         Tiempo: <span id="game-timer">00:00</span>
       </p>
+      <button id="restart-game" type="button">Reiniciar Juego</button>
 
       <section id="game-board" aria-label="Tablero de memoria"></section>
     </main>
@@ -211,9 +212,18 @@ function mostrarJuego(perfil, cantidad) {
   document.querySelector('#game-player').textContent = `Jugador: ${perfil.username}`;
   document.querySelector('#total-cards').textContent = `Número de cartas: ${cantidad}`;
 
+  const botonReiniciar = document.querySelector('#restart-game');
+
   const gameTimer = document.querySelector('#game-timer');
   let tiempoTranscurrido = 0;
   let intervaloCronometro = null;
+  let timeoutOcultarCartas = null;
+
+  botonReiniciar.addEventListener('click', () => {
+    clearInterval(intervaloCronometro);
+    clearTimeout(timeoutOcultarCartas);
+    mostrarJuego(perfil, cantidad);
+  });
 
   function actualizarCronometro() {
     tiempoTranscurrido++;
@@ -227,6 +237,10 @@ function mostrarJuego(perfil, cantidad) {
 
   obtenerPokemons()
     .then((pokemons) => {
+      if (!app.contains(botonReiniciar)) {
+        return;
+      }
+
       if (cantidad / 2 > pokemons.length) {
         document.querySelector('#game-board').textContent =
           'No hay suficientes Pokémon para crear tantas parejas.';
@@ -269,7 +283,7 @@ function mostrarJuego(perfil, cantidad) {
           const nombre = document.createElement('span');
           nombre.textContent = carta.pokemon;
           nombre.classList.add('pokemon-card-name');
-          
+
           boton.append(imagen, nombre);
 
           boton.classList.add('revealed');
@@ -297,7 +311,7 @@ function mostrarJuego(perfil, cantidad) {
           }else {
             tableroBloqueado = true;
 
-            setTimeout(() => {
+            timeoutOcultarCartas = setTimeout(() => {
               primeraCarta.textContent = '?';
               segundaCarta.textContent = '?';
               primeraCarta.classList.remove('revealed');
@@ -313,8 +327,11 @@ function mostrarJuego(perfil, cantidad) {
     intervaloCronometro = setInterval(actualizarCronometro, 1000);
   })
   .catch(() => {
+    if (!app.contains(botonReiniciar)) {
+      return;
+    }
     document.querySelector('#game-board').textContent =
-      'No se pudieron cargar los Pokémon. Inténtalo de nuevo.';
+      'No se pudieron cargar los Pokémon. Por favor, inténtalo de nuevo.';
   });
 }
 
