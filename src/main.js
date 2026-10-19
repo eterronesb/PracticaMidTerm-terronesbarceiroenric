@@ -2,6 +2,7 @@ import './style.css';
 import { obtenerPokemons, obtenerPokemonPorNombre } from './api/pokemonApi.js';
 import { guardarSesion, obtenerSesion, cerrarSesion} from './storage/session.js';
 import { generarParejas } from './game/gameLogic.js';
+import { guardarPartida} from './storage/history.js';
 
 const app = document.querySelector('#app');
 const sesionActual = obtenerSesion();
@@ -305,6 +306,18 @@ function mostrarJuego(perfil, cantidad) {
 
               if (parejasEncontradas === totalParejas) {
                 clearInterval(intervaloCronometro);
+
+                const partida = {
+                  id: globalThis.crypto.randomUUID(),
+                  username: perfil.username,
+                  pokemonFavorito: perfil.pokemonFavorito.nombre,
+                  cantidadCartas: cantidad,
+                  tiempoSegundos: tiempoTranscurrido,
+                  fecha: new Date().toISOString()
+                };
+
+                guardarPartida(partida);
+
                 const mensajeVictoria = document.createElement('p');
 
                 mensajeVictoria.id = 'victory-message';
