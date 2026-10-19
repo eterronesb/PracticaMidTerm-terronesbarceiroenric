@@ -2,6 +2,7 @@ import './style.css';
 import { obtenerPokemons, obtenerPokemonPorNombre } from './api/pokemonApi.js';
 import { guardarSesion, obtenerSesion, cerrarSesion} from './storage/session.js';
 import { generarParejas } from './game/gameLogic.js';
+import { guardarPartida, obtenerRanking} from './storage/history.js';
 
 const app = document.querySelector('#app');
 const sesionActual = obtenerSesion();
@@ -190,6 +191,64 @@ function mostrarPerfil(perfil) {
   });   
 }
 
+function mostrarRanking(partidaDestacadaId = null, mostrarTodas = false) {
+  const rankingContent = document.querySelector('#ranking-content');
+
+  if (!rankingContent) {
+    return;
+  }
+
+  const partidas = obtenerRanking();
+  const ultimaPartida = partidas.reduce((ultima, partida) => {
+    if (!ultima || partida.fecha > ultima.fecha) {
+      return partida;
+    }
+
+    return ultima;
+  }, null);
+  const idDestacado = partidaDestacadaId ?? ultimaPartida?.id;
+
+  rankingContent.replaceChildren();
+
+  if (partidas.length === 0) {
+    rankingContent.textContent = 'Todavia no hay registradas.';
+    return;
+  }
+
+  const lista = document.createElement('ol');
+  const partidasVisibles = mostrarTodas ? partidas : partidas.slice(0,5);
+
+  partidasVisibles.forEach((partida) => {
+    const elemento = document.createElement('li');
+
+    if (partida.id === idDestacado) {
+      elemento.classList.add('ranking-highlight');
+    }
+
+    const minutos = String(Math.floor(partida.tiempoSegundos / 60)).padStart(2, '0');
+    const segundos = String(partida.tiempoSegundos % 60).padStart(2, '0');
+
+    elemento.textContent = `${partida.username} - ${partida.cantidadCartas} cartas - ${minutos}:${segundos}`;
+
+    lista.appendChild(elemento);
+  });
+
+  rankingContent.appendChild(lista);
+
+  if (partidas.length > 5) {
+    const botonVerTodas = document.createElement('button');
+
+    botonVerTodas.type = 'button';
+    botonVerTodas.textContent = mostrarTodas ? 'Ver solo el Top 5' : 'Ver todas las partidas';
+
+    botonVerTodas.addEventListener('click', () => {
+      mostrarRanking(idDestacado, !mostrarTodas);
+    });
+
+    rankingContent.appendChild(botonVerTodas);
+  }
+}
+
 function mostrarJuego(perfil, cantidad) {
   const app = document.querySelector('#app');
 
@@ -207,11 +266,19 @@ function mostrarJuego(perfil, cantidad) {
       <button id="restart-game" type="button">Reiniciar Juego</button>
 
       <section id="game-board" aria-label="Tablero de memoria"></section>
+
+      <section id="ranking" aria-label="Clasificación de jugadores">
+        <h2> Ranking</h2>
+        <div id="ranking-content">
+          <p>Todavía no hay partidas registradas.</p>
+        </div>
+      </section>    
     </main>
   `;
   
   document.querySelector('#game-player').textContent = `Jugador: ${perfil.username}`;
   document.querySelector('#total-cards').textContent = `Número de cartas: ${cantidad}`;
+  mostrarRanking();
 
   const botonReiniciar = document.querySelector('#restart-game');
 
@@ -305,6 +372,19 @@ function mostrarJuego(perfil, cantidad) {
 
               if (parejasEncontradas === totalParejas) {
                 clearInterval(intervaloCronometro);
+
+                const partida = {
+                  id: globalThis.crypto.randomUUID(),
+                  username: perfil.username,
+                  pokemonFavorito: perfil.pokemonFavorito.nombre,
+                  cantidadCartas: cantidad,
+                  tiempoSegundos: tiempoTranscurrido,
+                  fecha: new Date().toISOString()
+                };
+
+                guardarPartida(partida);
+                mostrarRanking(partida.id);
+
                 const mensajeVictoria = document.createElement('p');
 
                 mensajeVictoria.id = 'victory-message';

@@ -31,3 +31,12 @@ body {
   text-align: center;
   text-transform: capitalize;
 }
+
+.ranking-highlight {
+  background-color: #d9f7be;
+  color: #234b12;
+  font-weight: bold;
+  border: 2px solid #52c41a;
+  border-radius: 8px;
+  padding: 8px;
+}
