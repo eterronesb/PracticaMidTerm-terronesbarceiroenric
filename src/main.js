@@ -10,36 +10,49 @@ const sesionActual = obtenerSesion();
 
 
 app.innerHTML = `
-  <main>
+  <main class="welcome-screen">
     <h1>PokeMemory</h1>
-    <p>¡Bienvenido al juego de memoria Pokemon!</p>
+    <p class="welcome-intro">
+      ¡Bienvenido al juego de memoria Pokémon!
+    </p>
 
-    <h2>Crear Perfil</h2>
-    <form id="profile-form">
-      <label for="username">Nombre de usuario:</label>
-      <input
-        type="text"
-        id="username"
-        name="username" 
-        minlength="3"
-        maxlength="15"
-        required 
-      />
-      <p id="username-error" role="alert"></p>
-      <label for="pokemon-search">Pokémon favorito:</label>
-      <input
-        type="text"
-        id="pokemon-search"
-        name="pokemon-search"
-        placeholder="Escribe el nombre de tu Pokémon favorito"
-        autocomplete="off"
-      />
-      <ul id="pokemon-results"></ul>
-      <div id="selected-pokemon" aria-live="polite"></div>
-      <button type="submit">Crear Perfil</button>
-    </form>
+    <section class="welcome-panel">
+      <h2>CREAR ENTRENADOR</h2>
+
+      <form id="profile-form">
+        <div class="profile-field">
+          <label for="username">Nombre de usuario</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            minlength="3"
+            maxlength="15"
+            required
+          />
+          <p id="username-error" role="alert"></p>
+        </div>
+
+        <div class="profile-field">
+          <label for="pokemon-search">Pokémon favorito</label>
+          <input
+            type="text"
+            id="pokemon-search"
+            name="pokemon-search"
+            placeholder="Busca tu Pokémon favorito"
+            autocomplete="off"
+          />
+          <ul id="pokemon-results"></ul>
+          <div id="selected-pokemon" aria-live="polite"></div>
+        </div>
+
+        <div class="profile-actions">
+          <button type="submit">▶ Crear perfil</button>
+        </div>
+      </form>
+    </section>
   </main>
-`;  
+`; 
 
 const form = document.querySelector('#profile-form');
     form.addEventListener('submit', (event) => {
@@ -134,32 +147,51 @@ function mostrarPerfil(perfil) {
   app.innerHTML = `
     <main>
       <h1>PokeMemory</h1>
-      <h2 id="welcome-message"></h2>
 
-      <p>Tu Pokémon favorito es: ${perfil.pokemonFavorito.nombre}</p>
-      <img
-        src="${perfil.pokemonFavorito.imagen}"
-        alt="Imagen de ${perfil.pokemonFavorito.nombre}" 
-      />
-      <div>
-        <label for="card-count">Número de cartas:</label>
-        <input
-          type="number"
-          id="card-count"
-          min="2"
-          step="2"
-          value="12"
-          required
-        />
+      <section class="profile-panel">
+        <h2 id="welcome-message"></h2>
+
+        <div class="favorite-pokemon">
+          <img
+            src="${perfil.pokemonFavorito.imagen}"
+            alt="Imagen de ${perfil.pokemonFavorito.nombre}"
+          />
+          <div>
+            <span class="panel-label">POKÉMON FAVORITO</span>
+            <p class="favorite-pokemon-name"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="game-settings">
+        <h2>CONFIGURAR PARTIDA</h2>
+
+        <div class="card-count-field">
+          <label for="card-count">Número de cartas</label>
+          <input
+            type="number"
+            id="card-count"
+            min="2"
+            max="24"
+            step="2"
+            value="12"
+            required
+          />
+        </div>
+
         <p id="card-count-error" role="alert"></p>
-      </div>
-      <button id="play-button" type="button">Jugar</button>
 
-      <button id="logout-button" type="button">Cerrar Sesión</button>
+        <div class="menu-actions">
+          <button id="play-button" type="button">▶ Jugar</button>
+          <button id="logout-button" type="button">Cerrar sesión</button>
+        </div>
+      </section>
     </main>
   `;
   const welcomeMessage = document.querySelector('#welcome-message');
   welcomeMessage.textContent = `¡Bienvenido, ${perfil.username}!`;
+
+  document.querySelector('.favorite-pokemon-name').textContent = perfil.pokemonFavorito.nombre;
 
   const logoutButton = document.querySelector('#logout-button');
   logoutButton.addEventListener('click', () => {
@@ -257,14 +289,29 @@ function mostrarJuego(perfil, cantidad) {
       <h1>PokeMemory</h1>
       <h2>Juego de memoria Porkémon</h2>
 
-      <p id="game-player"></p>
-      <p id="total-cards"></p>
+      <section class="game-info" aria-label="Información de la partida">
+        <div class="game-stats">
+          <div class="game-stat">
+            <span class="game-stat-label">ENTRENADOR</span>
+            <p id="game-player"></p>
+          </div>
 
-      <p>
-        Tiempo: <span id="game-timer">00:00</span>
-      </p>
-      <button id="restart-game" type="button">Reiniciar Juego</button>
-      <button id="exit-game" type="button">Volver al menú</button>
+          <div class="game-stat">
+            <span class="game-stat-label">CARTAS</span>
+            <p id="total-cards"></p>
+          </div>
+
+          <div class="game-stat">
+            <span class="game-stat-label">TIEMPO</span>
+            <p id="game-timer">00:00</p>
+          </div>
+        </div>
+
+        <div class="game-actions">
+          <button id="restart-game" type="button">Reiniciar juego</button>
+          <button id="exit-game" type="button">Volver al menú</button>
+        </div>
+      </section>
 
       <section id="game-board" aria-label="Tablero de memoria"></section>
 
@@ -277,8 +324,8 @@ function mostrarJuego(perfil, cantidad) {
     </main>
   `;
   
-  document.querySelector('#game-player').textContent = `Jugador: ${perfil.username}`;
-  document.querySelector('#total-cards').textContent = `Número de cartas: ${cantidad}`;
+  document.querySelector('#game-player').textContent = perfil.username;
+  document.querySelector('#total-cards').textContent = cantidad;
   mostrarRanking();
 
   const botonReiniciar = document.querySelector('#restart-game');
@@ -336,7 +383,7 @@ function mostrarJuego(perfil, cantidad) {
 
         boton.type = 'button';
         boton.classList.add('memory-card');
-        boton.textContent = '?';
+        boton.textContent = '';
         boton.dataset.pokemon = carta.pokemon;
         boton.dataset.parejaId = String(carta.parejaId);
 
@@ -404,8 +451,8 @@ function mostrarJuego(perfil, cantidad) {
             tableroBloqueado = true;
 
             timeoutOcultarCartas = setTimeout(() => {
-              primeraCarta.textContent = '?';
-              segundaCarta.textContent = '?';
+              primeraCarta.replaceChildren();
+              segundaCarta.replaceChildren();
               primeraCarta.classList.remove('revealed');
               segundaCarta.classList.remove('revealed');
               cartasDescubiertas.length = 0;
