@@ -10,7 +10,26 @@ export function obtenerHistorial() {
     try {
         const historial = JSON.parse(datosGuardados);
 
-        return Array.isArray(historial) ? historial : [];
+        if (!Array.isArray(historial)) {
+            return [];
+        }
+        return historial.filter((partida) =>
+            partida !== null &&
+            typeof partida === 'object' &&
+            typeof partida.id === 'string' &&
+            partida.id.length > 0 &&
+            typeof partida.username === 'string' &&
+            partida.username.trim().length > 0 &&
+            typeof partida.pokemonFavorito === 'string' &&
+            Number.isInteger(partida.cantidadCartas) &&
+            partida.cantidadCartas >= 2 &&
+            partida.cantidadCartas <= 24 &&
+            partida.cantidadCartas % 2 === 0 &&
+            Number.isInteger(partida.tiempoSegundos) &&
+            partida.tiempoSegundos >= 0 &&
+            typeof partida.fecha === 'string' &&
+            !Number.isNaN(Date.parse(partida.fecha))
+        );
     } catch {
         return [];
     }
