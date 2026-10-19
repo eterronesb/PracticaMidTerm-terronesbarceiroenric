@@ -220,6 +220,9 @@ function mostrarJuego(perfil, cantidad) {
       const cartasDescubiertas = [];
       let tableroBloqueado = false;
 
+      let parejasEncontradas = 0;
+      const totalParejas = cantidad / 2;
+
       cartas.forEach((carta) => {
         const boton = document.createElement('button');
 
@@ -250,28 +253,37 @@ function mostrarJuego(perfil, cantidad) {
               segundaCarta.classList.add('matched');
             
               cartasDescubiertas.length = 0;
-            } else {
-              tableroBloqueado = true;
+              parejasEncontradas ++;
 
-              setTimeout(() => {
-                primeraCarta.textContent = '?';
-                segundaCarta.textContent = '?';
-                primeraCarta.classList.remove('revealed');
-                segundaCarta.classList.remove('revealed');
-                cartasDescubiertas.length = 0;
-                tableroBloqueado = false;
-              }, 1000);
-            }
+              if (parejasEncontradas === totalParejas) {
+                const mensajeVictoria = document.createElement('p');
+
+                mensajeVictoria.id = 'victory-message';
+                mensajeVictoria.textContent = `¡Felicidades, ${perfil.username}! Has encontrado todas las parejas.`;
+
+                tablero.appendChild(mensajeVictoria);
+              } 
+          }else {
+            tableroBloqueado = true;
+
+            setTimeout(() => {
+              primeraCarta.textContent = '?';
+              segundaCarta.textContent = '?';
+              primeraCarta.classList.remove('revealed');
+              segundaCarta.classList.remove('revealed');
+              cartasDescubiertas.length = 0;
+              tableroBloqueado = false;
+            }, 1000);
           }
-        });
-          
-        tablero.appendChild(boton);
+        }
       });
-    })
-    .catch(() => {
-      document.querySelector('#game-board').textContent =
-        'No se pudieron cargar los Pokémon. Inténtalo de nuevo.';
+      tablero.appendChild(boton);
     });
+  })
+  .catch(() => {
+    document.querySelector('#game-board').textContent =
+      'No se pudieron cargar los Pokémon. Inténtalo de nuevo.';
+  });
 }
 
 if (sesionActual !== null) {
