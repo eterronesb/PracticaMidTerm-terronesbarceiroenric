@@ -264,6 +264,7 @@ function mostrarJuego(perfil, cantidad) {
         Tiempo: <span id="game-timer">00:00</span>
       </p>
       <button id="restart-game" type="button">Reiniciar Juego</button>
+      <button id="exit-game" type="button">Volver al menú</button>
 
       <section id="game-board" aria-label="Tablero de memoria"></section>
 
@@ -281,6 +282,7 @@ function mostrarJuego(perfil, cantidad) {
   mostrarRanking();
 
   const botonReiniciar = document.querySelector('#restart-game');
+  const botonSalir = document.querySelector('#exit-game');
 
   const gameTimer = document.querySelector('#game-timer');
   let tiempoTranscurrido = 0;
@@ -291,6 +293,12 @@ function mostrarJuego(perfil, cantidad) {
     clearInterval(intervaloCronometro);
     clearTimeout(timeoutOcultarCartas);
     mostrarJuego(perfil, cantidad);
+  });
+
+  botonSalir.addEventListener('click', () => {
+    clearInterval(intervaloCronometro);
+    clearTimeout(timeoutOcultarCartas);
+    mostrarPerfil(perfil);
   });
 
   function actualizarCronometro() {
