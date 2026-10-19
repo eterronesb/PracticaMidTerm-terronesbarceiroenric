@@ -259,7 +259,19 @@ function mostrarJuego(perfil, cantidad) {
             return;
           }
 
-          boton.textContent = carta.pokemon;
+          boton.replaceChildren();
+
+          const imagen = document.createElement('img');
+          imagen.src = carta.imagen;
+          imagen.alt = carta.pokemon;
+          imagen.classList.add('pokemon-card-image');
+
+          const nombre = document.createElement('span');
+          nombre.textContent = carta.pokemon;
+          nombre.classList.add('pokemon-card-name');
+          
+          boton.append(imagen, nombre);
+
           boton.classList.add('revealed');
           cartasDescubiertas.push(boton);
 
