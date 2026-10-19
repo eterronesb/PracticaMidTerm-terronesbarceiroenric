@@ -200,12 +200,30 @@ function mostrarJuego(perfil, cantidad) {
       <p id="game-player"></p>
       <p id="total-cards"></p>
 
+      <p>
+        Tiempo: <span id="game-timer">00:00</span>
+      </p>
+
       <section id="game-board" aria-label="Tablero de memoria"></section>
     </main>
   `;
   
   document.querySelector('#game-player').textContent = `Jugador: ${perfil.username}`;
   document.querySelector('#total-cards').textContent = `Número de cartas: ${cantidad}`;
+
+  const gameTimer = document.querySelector('#game-timer');
+  let tiempoTranscurrido = 0;
+  let intervaloCronometro = null;
+
+  function actualizarCronometro() {
+    tiempoTranscurrido++;
+    const minutos = Math.floor(tiempoTranscurrido / 60);
+    const segundos = tiempoTranscurrido % 60;
+
+    const minutosFormateados = String(minutos).padStart(2, '0');
+    const segundosFormateados = String(segundos).padStart(2, '0');
+    gameTimer.textContent = `${minutosFormateados}:${segundosFormateados}`;
+  }
 
   obtenerPokemons()
     .then((pokemons) => {
@@ -256,6 +274,7 @@ function mostrarJuego(perfil, cantidad) {
               parejasEncontradas ++;
 
               if (parejasEncontradas === totalParejas) {
+                clearInterval(intervaloCronometro);
                 const mensajeVictoria = document.createElement('p');
 
                 mensajeVictoria.id = 'victory-message';
@@ -279,6 +298,7 @@ function mostrarJuego(perfil, cantidad) {
       });
       tablero.appendChild(boton);
     });
+    intervaloCronometro = setInterval(actualizarCronometro, 1000);
   })
   .catch(() => {
     document.querySelector('#game-board').textContent =
