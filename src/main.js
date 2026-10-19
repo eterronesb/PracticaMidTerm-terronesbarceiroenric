@@ -243,7 +243,7 @@ function mostrarRanking(partidaDestacadaId = null, mostrarTodas = false) {
   rankingContent.replaceChildren();
 
   if (partidas.length === 0) {
-    rankingContent.textContent = 'Todavia no hay registradas.';
+    rankingContent.textContent = 'Todavia no hay partidas registradas.';
     return;
   }
 
@@ -287,7 +287,7 @@ function mostrarJuego(perfil, cantidad) {
   app.innerHTML = `
     <main>
       <h1>PokeMemory</h1>
-      <h2>Juego de memoria Porkémon</h2>
+      <h2>Juego de memoria Pokémon</h2>
 
       <section class="game-info" aria-label="Información de la partida">
         <div class="game-stats">
@@ -377,6 +377,7 @@ function mostrarJuego(perfil, cantidad) {
 
       let parejasEncontradas = 0;
       const totalParejas = cantidad / 2;
+      let partidaTerminada = false;
 
       cartas.forEach((carta) => {
         const boton = document.createElement('button');
@@ -389,6 +390,7 @@ function mostrarJuego(perfil, cantidad) {
 
         boton.addEventListener('click', () => {
           if (
+            partidaTerminada ||
             tableroBloqueado ||
             boton.classList.contains('revealed') ||
             boton.classList.contains('matched')
@@ -426,6 +428,7 @@ function mostrarJuego(perfil, cantidad) {
               parejasEncontradas ++;
 
               if (parejasEncontradas === totalParejas) {
+                partidaTerminada = true;
                 clearInterval(intervaloCronometro);
 
                 const partida = {
