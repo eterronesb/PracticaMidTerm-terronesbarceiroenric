@@ -4,7 +4,7 @@
 
 **Aplicación desplegada:** https://eterronesb.github.io/PracticaMidTerm-terronesbarceiroenric/
 
-**Vídeo de demostración:** Pendiente de publicación en YouTube.
+**Vídeo de demostración:** (https://youtu.be/02D_8SMWwp8)
 
 ## Descripción
 
